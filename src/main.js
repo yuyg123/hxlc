@@ -6,11 +6,13 @@ import router from './router'
 import 'es6-promise/auto'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-
+import './rem'
+import axios from 'axios'
 
 Vue.use(ElementUI, {size: 'mini'});
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+Vue.prototype.$axios = axios;
 
 /* eslint-disable no-new */
 new Vue({
