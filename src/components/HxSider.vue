@@ -1,16 +1,16 @@
 <template>
   <div class="hxSider-container">
-    <div class="top-content">
+    <div class="silder-title">
       <span>高度（h/pa）</span>
     </div>
-    <div class="bottom-content">
-      <div class="leftSilderBar">
-        <div class="silderItem" v-for="option in options">
-          <div class="silderbar" v-if="option === currentSelect"><span class="silderbarStep currentSelect"
-                                                                       @click="changebar"></span></div>
-          <div class="silderbar" v-else><span class="silderbarStep" @click="changebar"></span></div>
-
-          <span class="silderbar-title" v-text="option" @click="change"></span>
+    <div class="silder-content">
+      <div class="hpaProcess"></div>
+      <div class="hpa-slider-button" @mousedown="onmousedown"></div>
+      <div class="hpa-optionItems">
+        <div v-for="option in options" class="hpa-optionItem" @click="selectNode">
+          <span class="hpa-slider-item"></span>
+          <span class="hpa-slider-stop"></span>
+          <span class="hpa-slider-index" :title='option' v-text="option"></span>
         </div>
       </div>
     </div>
@@ -30,14 +30,29 @@
     },
     watch: {
       currentSelect: function (newVal, oldVal) {
+        let items = document.getElementsByClassName("hpa-optionItem");
+        if (items.length === 0) {
+          return;
+        }
+        for (let i = 0; i < this.options.length; i++) {
+          if (newVal === this.options[i]) {
+            this.selectBtn = items[i];
+            break;
+          }
+        }
+        this.sliderBtn.style.top = this.selectBtn.offsetTop + this.selectBtn.clientHeight / 2 - 5 + 'px';
+        this.sliderBtn.title = this.selectTime;
         this.$emit('change', newVal);
-      }
+      },
+      options: function (newVal, oldVal) {
+        this.selectTime = newVal[0];
+      },
     },
     data() {
       return {}
     },
-    mounted(){
-
+    mounted() {
+      this.sliderBtn = document.getElementsByClassName('hpa-slider-button')[0];
     },
     methods: {
       change(e) {
@@ -46,61 +61,52 @@
           this.currentSelect = text;
         }
       },
-      changebar(e) {
-        let text = e.currentTarget.parentNode.parentNode.getElementsByClassName('silderbar-title')[0].textContent;
-        if (this.currentSelect !== text) {
-          this.currentSelect = text;
-        }
+      selectNode(e) {
+        this.currentSelect = e.currentTarget.getElementsByClassName("hpa-slider-index")[0].title;
       },
       onmousedown: function (e) {
         let self = this;
         let btn = this.sliderBtn;
-        let box = document.getElementsByClassName("process")[0];
-        let left = box.getBoundingClientRect().left;
-        let distance = box.clientWidth;//滑动成功的宽度（距离）
+        let box = document.getElementsByClassName("hpaProcess")[0];
+        let top = box.getBoundingClientRect().top;
+        let distance = box.clientHeight;//滑动成功的宽度（距离）
 
         let len = (distance - 64) / (this.options.length - 2);
 
-        //1.鼠标按下之前必须清除掉后面设置的过渡属性
-        btn.style.transition = "";
-
-        //三、给文档注册鼠标移动事件
         document.onmousemove = function (e) {
 
           e = e || window.event;
           //1.获取鼠标移动后的水平位置
-          let moveX = e.clientX - left;
-          if (moveX > distance - 16) {
-            moveX = distance - 20;
-          } else if (moveX < 16) {
-            moveX = 12;
+          let moveY = e.clientY - top;
+          if (moveY > distance - 16) {
+            moveY = distance - 20;
+          } else if (moveY < 16) {
+            moveY = 12;
           }
-          btn.style.left = moveX + "px";
+          btn.style.top = moveY + "px";
         };
 
         document.onmouseup = function (e) {
           e = e || window.event;
           //1.获取鼠标移动后的水平位置
-          let moveX = e.clientX - left;
-          if (moveX > distance - 32) {
-            moveX = distance - 20;
-            self.selectTime = self.options[self.options.length - 1];
-          } else if (moveX < 32) {
-            moveX = 12;
-            self.selectTime = self.options[0];
-          } else if (moveX >= 32 && moveX <= distance - 32) {
-            let items = parseInt((moveX - 32) / (len / 2));
+          let moveY = e.clientY - top;
+          if (moveY > distance - 32) {
+            moveY = distance - 32;
+            self.currentSelect = self.options[self.options.length - 1];
+          } else if (moveY < 32) {
+            moveY = 12;
+            self.currentSelect = self.options[0];
+          } else if (moveY >= 32 && moveY <= distance - 32) {
+            let items = parseInt((moveY - 32) / (len / 2));
             let len2 = parseInt(items / 2) + 1;
-            moveX = (len2 - 0.5) * len + 27;
-            self.selectTime = self.options[len2];
+            moveY = (len2 - 0.5) * len + 27;
+            self.currentSelect = self.options[len2];
           }
-          btn.style.left = moveX + "px";
+          btn.style.top = moveY + "px";
 
           document.onmousemove = null;
           document.onmouseup = null;
         }
-
-
       }
     }
   }
@@ -109,80 +115,82 @@
 <style scoped>
   .hxSider-container {
     display: flex;
-    height: 19rem;
+    height: 17rem;
     padding-left: 0.5rem;
     position: relative;
   }
 
-  .top-content {
+  .silder-title {
     height: 1rem;
     color: #000;
     font-size: 0.7rem;
   }
 
-  .bottom-content {
+  .silder-content {
     position: absolute;
-    top: 1.5rem;
     height: calc(100% - 2rem);
-    display: flex;
+    top: 2rem;
   }
 
-  .leftSilderBar {
+  .hpaProcess {
     height: 100%;
-    margin-left: 0.2rem;
+    width: 0.3rem;
+    position: absolute;
+  }
+
+  .hpa-slider-button {
+    position: absolute;
+    background: url(../assets/images/高度滑块.png) center no-repeat;
+    width: 1rem;
+    height: 1rem;
+    left: -0.2rem;
+    top: 0.5rem;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .hpa-optionItems {
+    height: 100%;
     display: flex;
     flex-direction: column;
   }
 
-  .silderbar {
+  .hpa-optionItem {
+    flex: 1;
+    width: 0.6rem;
     background: rgba(0, 0, 0, 0.5);
-    width: 0.5rem;
+    cursor: pointer;
     position: relative;
   }
 
-  .silderItem {
-    flex: 1;
-    display: flex;
-    color: black;
-  }
-
-  .silderbar-title {
-    margin-left: 1rem;
-    margin-top: 0.5rem;
-    height: 0.9rem;
-    font-size: 0.1rem;
-    padding: 0.05rem 0.3rem;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    cursor: pointer;
-  }
-
-  .silderItem:nth-child(1) .silderbar {
-    border-radius: 1rem 1rem 0 0;
-  }
-
-  .silderItem:last-child .silderbar {
-    border-radius: 0 0 1rem 1rem;
-    height: 2rem;
-  }
-
-  .silderbarStep {
-    height: 0.2rem;
-    background: white;
-    position: absolute;
-    width: 0.4rem;
-    left: 0.05rem;
-    top: 0.9rem;
-    cursor: pointer;
-  }
-
-  .silderbarStep.currentSelect {
-    background: url(../assets/images/高度滑块.png) center no-repeat;
-    width: 1rem;
+  .hpa-optionItem:nth-child(1) {
+    border-radius: 0.3rem 0.3rem 0 0;
     height: 1rem;
-    left: -0.25rem;
-    top: 0.5rem;
   }
 
+  .hpa-optionItem:nth-last-child(1) {
+    border-radius: 0 0 0.3rem 0.3rem;
+    height: 1rem;
+  }
+
+  .hpa-slider-stop {
+    width: 0.6rem;
+    height: 0.2rem;
+    top: 1rem;
+    position: absolute;
+    left: 0;
+    background: white;
+  }
+
+  .hpa-slider-index {
+    position: absolute;
+    left: 1.5rem;
+    padding: 0 0.1rem;
+    background: rgba(0, 0, 0, 0.5);
+    font-size: 0.3rem;
+    width: 1.8rem;
+    cursor: pointer;
+    top: 0.8rem;
+  }
 
 </style>

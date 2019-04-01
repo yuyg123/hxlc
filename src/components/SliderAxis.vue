@@ -32,6 +32,9 @@
     watch: {
       selectTime: function (newVal, oldVal) {
         let items = document.getElementsByClassName("optionItem");
+        if (items.length === 0) {
+          return;
+        }
         if (this.selectBtn) {
           this.selectBtn.classList.remove('currentSelect');
         }

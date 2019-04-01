@@ -255,7 +255,7 @@
         </el-button-group>
       </div>
       <div class="rightFooterPanel">
-        <SliderAxis ref="timeSlider" class="rightSlider" :selectTime="selectTime" :options='options'
+        <SliderAxis ref="timeSlider" class="rightSlider" :options='options'
                     @change="changeTime"></SliderAxis>
       </div>
     </div>
@@ -290,8 +290,6 @@
         colorRanger: [2, 5], //颜色范围选择
 
         seleteDate: date.getFullYear() + '-' + (date.getMonth() >= 10 ? date.getMonth() : '0' + date.getMonth()) + '-' + (date.getDate() >= 10 ? date.getDate() : '0' + date.getDate()),
-
-        selectTime: null,
 
         options: [],//时间轴选项list
         hpas: ['200', '500', '700', '850', '925', '1000', '地面'],
@@ -848,8 +846,7 @@
   }
 
   .leftToolbars {
-    transform: translateX(0);
-    animation: all .5s;
+    position: relative;
     display: flex;
   }
 
